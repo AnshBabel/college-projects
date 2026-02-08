@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Complaint / Issue Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo">Complaint / Issue Tracker</div>
+        <div class="nav-buttons">
+            <a href="index.html" class="btn btn-blue">User Portal</a>
+            <a href="admin.html" class="btn btn-gray">Admin Panel</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="form-card">
+            <h2>Submit a Complaint</h2>
+            <p class="subtitle">Fill out the form below. You will receive a tracking ID.</p>
+            <form id="complaintForm">
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Address *</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Subject *</label>
+                    <input type="text" id="subject" required>
+                </div>
+                <div class="form-group">
+                    <label>Description *</label>
+                    <textarea id="description" rows="5" required></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Submit Complaint</button>
+            </form>
+            <div id="message" style="margin-top: 20px; text-align: center; font-weight: bold; color: green;"></div>
+        </div>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>

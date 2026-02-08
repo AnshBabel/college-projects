@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel - Issue Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body onload="loadComplaints()">
+    <header class="navbar">
+        <div class="logo">Complaint / Issue Tracker (Admin)</div>
+        <div class="nav-buttons">
+            <a href="index.html" class="btn btn-gray">User Portal</a>
+            <a href="admin.html" class="btn btn-blue">Admin Panel</a>
+        </div>
+    </header>
+
+    <main class="admin-container">
+        <h2>All Complaints</h2>
+        <table id="complaintsTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Subject</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="complaintList">
+                </tbody>
+        </table>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>

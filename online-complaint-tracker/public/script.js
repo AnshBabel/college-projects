@@ -1,110 +1,78 @@
-function getData() {
-    let data = localStorage.getItem("complaints");   // get data from localStorage
-    if (data) {
-        return JSON.parse(data);
-    } else {
-        return [];
-    }
-}
+// ================= USER PAGE =================
 
-function saveData(data) {
-    localStorage.setItem("complaints", JSON.stringify(data));       // save data to localStorage
-}
-
-function createId() {    
-    let count = localStorage.getItem("count");    // generate complaint id
-    if (!count) {
-        count = 1;
-    }
-
-    let id = "CMP" + count;
-    localStorage.setItem("count", parseInt(count) + 1);
-
-    return id;
-}
-
-// USER SIDE
-
-let form = document.getElementById("complaintForm");
+const form = document.getElementById("complaintForm");
 
 if (form) {
-    form.addEventListener("submit", function (e) {
+    form.addEventListener("submit", async function (e) {
         e.preventDefault();
 
-        let name = document.getElementById("name").value;
-        let email = document.getElementById("email").value;
-        let subject = document.getElementById("subject").value;
-        let description = document.getElementById("description").value;
+        const name = document.getElementById("name").value;
+        const email = document.getElementById("email").value;
+        const subject = document.getElementById("subject").value;
+        const description = document.getElementById("description").value;
 
-        if (name === "" || email === "" || subject === "" || description === "") {
-            alert("Please fill all fields");
-            return;
-        }
+        const response = await fetch("/complaints", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ name, email, subject, description })
+        });
 
-        let complaints = getData();
-
-        let newComplaint = {
-            id: createId(),
-            name: name,
-            email: email,
-            subject: subject,
-            description: description,
-            status: "Pending"
-        };
-
-        complaints.push(newComplaint);
-        saveData(complaints);
+        const data = await response.json();
 
         document.getElementById("message").innerText =
-            "Complaint Submitted! Your ID is " + newComplaint.id;
+            "Complaint submitted successfully! Your ID is: " + data.id;
 
         form.reset();
     });
 }
 
-// ADMIN SIDE
 
-function loadComplaints() {
-    let table = document.getElementById("complaintList");
-    if (!table) return;
+// ================= ADMIN PAGE =================
 
-    let complaints = getData();
+async function loadComplaints() {
+    const response = await fetch("/complaints");
+    const complaints = await response.json();
+
+    const table = document.getElementById("complaintList");
     table.innerHTML = "";
 
-    for (let i = 0; i < complaints.length; i++) {
+    complaints.forEach(c => {
+        const row = document.createElement("tr");
 
-        let row = `
-            <tr>
-                <td>${complaints[i].id}</td>
-                <td>${complaints[i].name}</td>
-                <td>${complaints[i].subject}</td>
-                <td>
-                    <select onchange="changeStatus(${i}, this.value)">
-                        <option value="Pending" ${complaints[i].status === "Pending" ? "selected" : ""}>Pending</option>
-                        <option value="Resolved" ${complaints[i].status === "Resolved" ? "selected" : ""}>Resolved</option>
-                        <option value="Rejected" ${complaints[i].status === "Rejected" ? "selected" : ""}>Rejected</option>
-                    </select>
-                </td>
-                <td>
-                    <button onclick="deleteComplaint(${i})">Delete</button>
-                </td>
-            </tr>
+        row.innerHTML = `
+            <td>${c.id}</td>
+            <td>${c.name}</td>
+            <td>${c.subject}</td>
+            <td>${c.status}</td>
+            <td>
+                <button onclick="updateStatus(${c.id}, 'resolved')">Resolve</button>
+                <button onclick="updateStatus(${c.id}, 'rejected')">Reject</button>
+                <button onclick="deleteComplaint(${c.id})">Delete</button>
+            </td>
         `;
 
-        table.innerHTML += row;
-    }
+        table.appendChild(row);
+    });
 }
 
-function changeStatus(index, newStatus) {
-    let complaints = getData();
-    complaints[index].status = newStatus;
-    saveData(complaints);
+async function updateStatus(id, status) {
+    await fetch("/complaints/" + id, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ status })
+    });
+
     loadComplaints();
 }
 
-function deleteComplaint(index) {
-    let complaints = getData();
-    complaints.splice(index, 1);
-    saveData(complaints);
+async function deleteComplaint(id) {
+    await fetch("/complaints/" + id, {
+        method: "DELETE"
+    });
+
     loadComplaints();
 }

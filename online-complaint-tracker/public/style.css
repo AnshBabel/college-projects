@@ -10,7 +10,7 @@ body {
     color: #334155;
 }
 
-/* Navbar Styling */
+
 .navbar {
     display: flex;
     justify-content: space-between;
@@ -49,7 +49,7 @@ body {
     color: #475569;
 }
 
-/* Main Layout */
+
 .container {
     display: flex;
     justify-content: center;
@@ -77,7 +77,6 @@ h2 {
     margin-bottom: 30px;
 }
 
-/* Form Elements */
 .form-group {
     margin-bottom: 20px;
 }
@@ -126,7 +125,40 @@ input::placeholder, textarea::placeholder {
     background-color: #1e40af;
 }
 
-/* ... keep your previous CSS here ... */
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-action {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.btn-action.resolve {
+    background: #16a34a;
+    color: white;
+}
+
+.btn-action.reject {
+    background: #dc2626;
+    color: white;
+}
+
+.btn-action.delete {
+    background: #64748b;
+    color: white;
+}
+
+.btn-action.disabled {
+    background: #e5e7eb;
+    color: #9ca3af;
+    cursor: not-allowed;
+}
 
 .admin-container { padding: 40px 10%; }
 table { width: 100%; border-collapse: collapse; background: white; margin-top: 20px; }

@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anonymous Confession Wall</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      color: white;
+      margin-bottom: 40px;
+      padding-top: 20px;
+    }
+
+    header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    header p {
+      font-size: 1.1em;
+      opacity: 0.9;
+    }
+
+    .user-info {
+      background: rgba(255,255,255,0.95);
+      padding: 15px 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .user-info.show {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .user-info-text {
+      font-size: 0.95em;
+      color: #333;
+    }
+
+    .logout-btn {
+      background: #ff6b6b;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+
+    .logout-btn:hover {
+      background: #ff5252;
+    }
+
+    /* Login Page */
+    #login {
+      display: none;
+      text-align: center;
+      background: rgba(255,255,255,0.95);
+      padding: 60px 40px;
+      border-radius: 15px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+
+    #login.show {
+      display: block;
+    }
+
+    #login h2 {
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 1.8em;
+    }
+
+    #login p {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 1.05em;
+    }
+
+    .google-btn {
+      background: white;
+      color: #333;
+      border: 2px solid #ddd;
+      padding: 12px 30px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: bold;
+      transition: all 0.3s;
+      display: inline-block;
+    }
+
+    .google-btn:hover {
+      background: #f8f8f8;
+      border-color: #667eea;
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    /* Confession Form */
+    #confession-form {
+      background: rgba(255,255,255,0.95);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      margin-bottom: 30px;
+      display: none;
+    }
+
+    #confession-form.show {
+      display: block;
+    }
+
+    #confession-form h3 {
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 1.3em;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    #text {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1em;
+      font-family: inherit;
+      resize: vertical;
+      transition: border-color 0.3s;
+    }
+
+    #text:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    #code {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1em;
+      transition: border-color 0.3s;
+    }
+
+    #code:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-helper {
+      font-size: 0.85em;
+      color: #999;
+      margin-top: 5px;
+    }
+
+    #submit {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.05em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    #submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    #submit:active {
+      transform: translateY(0);
+    }
+
+    #submit:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Confessions List */
+    #confessions {
+      display: grid;
+      gap: 20px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.95);
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    .card p {
+      color: #333;
+      font-size: 1.05em;
+      line-height: 1.6;
+      margin-bottom: 15px;
+      word-break: break-word;
+    }
+
+    .card-time {
+      font-size: 0.8em;
+      color: #999;
+      margin-bottom: 15px;
+    }
+
+    .reactions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .reaction-btn {
+      background: #f5f5f5;
+      border: 2px solid #e0e0e0;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.3em;
+      transition: all 0.2s;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .reaction-btn:hover {
+      background: #fff3cd;
+      border-color: #ffc107;
+      transform: scale(1.1);
+    }
+
+    .manage {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 2px solid #f0f0f0;
+    }
+
+    .edit-btn, .delete-btn {
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.95em;
+      transition: all 0.2s;
+    }
+
+    .edit-btn {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .edit-btn:hover {
+      background: #45a049;
+      transform: translateY(-2px);
+    }
+
+    .delete-btn {
+      background: #f44336;
+      color: white;
+    }
+
+    .delete-btn:hover {
+      background: #da190b;
+      transform: translateY(-2px);
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.6);
+      animation: fadeIn 0.2s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      max-width: 500px;
+      width: 90%;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-content h3 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .modal-content textarea,
+    .modal-content input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1em;
+    }
+
+    .modal-content textarea:focus,
+    .modal-content input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .modal-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .modal-btn {
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.95em;
+      transition: all 0.2s;
+    }
+
+    .modal-btn-save {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .modal-btn-save:hover {
+      background: #45a049;
+    }
+
+    .modal-btn-cancel {
+      background: #ccc;
+      color: #333;
+    }
+
+    .modal-btn-cancel:hover {
+      background: #bbb;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #333;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      z-index: 2000;
+      animation: slideInRight 0.3s ease-out;
+    }
+
+    @keyframes slideInRight {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .toast.success {
+      background: #4CAF50;
+    }
+
+    .toast.error {
+      background: #f44336;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 1.8em;
+      }
+
+      .reactions {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-content {
+        width: 95%;
+      }
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: white;
+      font-size: 1.2em;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      background: rgba(255,255,255,0.95);
+      border-radius: 12px;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🤫 Confession Wall</h1>
+      <p>Share your secrets anonymously</p>
+    </header>
+
+    <div class="user-info" id="userInfo">
+      <div class="user-info-text">
+        Logged in as <strong id="userName"></strong>
+      </div>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <div id="login" class="show">
+      <h2>Welcome to Confession Wall</h2>
+      <p>Sign in with Google to share your anonymous confessions</p>
+      <a href="http://localhost:5000/auth/google" class="google-btn">
+        🔐 Login with Google
+      </a>
+    </div>
+
+    <div id="confession-form">
+      <h3>📝 Share Your Confession</h3>
+      <div class="form-group">
+        <textarea id="text" placeholder="Type your honest confession here..." rows="5"></textarea>
+      </div>
+      <div class="form-group">
+        <input type="password" id="code" placeholder="Enter a secret code (min 4 chars) - you'll need this to edit/delete" />
+        <div class="form-helper">💡 Remember this code! You'll need it to edit or delete your confession later.</div>
+      </div>
+      <button id="submit">✨ Post Confession</button>
+    </div>
+
+    <div id="confessions"></div>
+  </div>
+
+  <!-- Modal for Edit -->
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <h3>✏️ Edit Your Confession</h3>
+      <textarea id="editText" placeholder="New confession text..." rows="4"></textarea>
+      <input type="password" id="editCode" placeholder="Enter your secret code" />
+      <div class="modal-buttons">
+        <button class="modal-btn modal-btn-save" onclick="saveEdit()">Save</button>
+        <button class="modal-btn modal-btn-cancel" onclick="closeEditModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Delete -->
+  <div id="deleteModal" class="modal">
+    <div class="modal-content">
+      <h3>🗑️ Delete Confession</h3>
+      <p style="margin-bottom: 20px; color: #666;">This action cannot be undone. Enter your secret code to confirm.</p>
+      <input type="password" id="deleteCode" placeholder="Enter your secret code" />
+      <div class="modal-buttons">
+        <button class="modal-btn modal-btn-save" onclick="confirmDelete()" style="background: #f44336;">Delete</button>
+        <button class="modal-btn modal-btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+let userId = null;
+let editingId = null;
+let deletingId = null;
+
+const API_BASE = 'http://localhost:5000';
+
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+async function fetchUser() {
+  try {
+    const res = await fetch(`${API_BASE}/auth/user`, { credentials: 'include' });
+    if (res.ok) {
+      const data = await res.json();
+      userId = data.id;
+      document.getElementById('userName').textContent = data.displayName || 'User';
+      document.getElementById('login').classList.remove('show');
+      document.getElementById('confession-form').classList.add('show');
+      document.getElementById('userInfo').classList.add('show');
+      loadConfessions();
+      setInterval(loadConfessions, 5000);
+    }
+  } catch (err) {
+    console.error('Error fetching user:', err);
+  }
+}
+
+async function loadConfessions() {
+  try {
+    const res = await fetch(`${API_BASE}/confessions`);
+    const list = await res.json();
+    const container = document.getElementById('confessions');
+    
+    if (list.length === 0) {
+      container.innerHTML = '<div class="empty-state">No confessions yet. Be the first to share! 💭</div>';
+      return;
+    }
+
+    container.innerHTML = '';
+    list.forEach(c => {
+      const date = new Date(c.createdAt);
+      const timeStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+      
+      const div = document.createElement('div');
+      div.className = 'card';
+      div.innerHTML = `
+        <p>${escapeHtml(c.text)}</p>
+        <div class="card-time">📅 ${timeStr}</div>
+        <div class="reactions">
+          <button class="reaction-btn" onclick="react('${c._id}','like')">👍 <span>${c.reactions.like || 0}</span></button>
+          <button class="reaction-btn" onclick="react('${c._id}','love')">❤️ <span>${c.reactions.love || 0}</span></button>
+          <button class="reaction-btn" onclick="react('${c._id}','laugh')">😂 <span>${c.reactions.laugh || 0}</span></button>
+        </div>
+        <div class="manage">
+          <button class="edit-btn" onclick="openEditModal('${c._id}')">✏️ Edit</button>
+          <button class="delete-btn" onclick="openDeleteModal('${c._id}')">🗑️ Delete</button>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  } catch (err) {
+    console.error('Error loading confessions:', err);
+    showToast('Failed to load confessions', 'error');
+  }
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+async function react(id, type) {
+  try {
+    const res = await fetch(`${API_BASE}/confessions/${id}/react`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type })
+    });
+    if (res.ok) {
+      loadConfessions();
+    }
+  } catch (err) {
+    console.error('Error reacting:', err);
+    showToast('Failed to react', 'error');
+  }
+}
+
+async function submitConfession() {
+  const text = document.getElementById('text').value.trim();
+  const code = document.getElementById('code').value;
+
+  if (!text) {
+    showToast('Please enter a confession', 'error');
+    return;
+  }
+  if (code.length < 4) {
+    showToast('Secret code must be at least 4 characters', 'error');
+    return;
+  }
+
+  document.getElementById('submit').disabled = true;
+
+  try {
+    const res = await fetch(`${API_BASE}/confessions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, secretCode: code, userId })
+    });
+    
+    if (res.ok) {
+      document.getElementById('text').value = '';
+      document.getElementById('code').value = '';
+      showToast('✨ Confession posted successfully!', 'success');
+      loadConfessions();
+    } else {
+      showToast('Failed to post confession', 'error');
+    }
+  } catch (err) {
+    console.error('Error submitting:', err);
+    showToast('Error posting confession', 'error');
+  } finally {
+    document.getElementById('submit').disabled = false;
+  }
+}
+
+function openEditModal(id) {
+  editingId = id;
+  document.getElementById('editModal').classList.add('show');
+  document.getElementById('editText').focus();
+}
+
+function closeEditModal() {
+  editingId = null;
+  document.getElementById('editModal').classList.remove('show');
+}
+
+async function saveEdit() {
+  const text = document.getElementById('editText').value.trim();
+  const code = document.getElementById('editCode').value;
+
+  if (!text) {
+    showToast('Confession cannot be empty', 'error');
+    return;
+  }
+  if (!code) {
+    showToast('Please enter your secret code', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/confessions/${editingId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, secretCode: code })
+    });
+
+    if (res.ok) {
+      closeEditModal();
+      showToast('✏️ Confession updated!', 'success');
+      loadConfessions();
+    } else {
+      const data = await res.json();
+      showToast(data.error || 'Failed to update', 'error');
+    }
+  } catch (err) {
+    console.error('Error updating:', err);
+    showToast('Error updating confession', 'error');
+  }
+}
+
+function openDeleteModal(id) {
+  deletingId = id;
+  document.getElementById('deleteModal').classList.add('show');
+  document.getElementById('deleteCode').focus();
+}
+
+function closeDeleteModal() {
+  deletingId = null;
+  document.getElementById('deleteModal').classList.remove('show');
+}
+
+async function confirmDelete() {
+  const code = document.getElementById('deleteCode').value;
+
+  if (!code) {
+    showToast('Please enter your secret code', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/confessions/${deletingId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ secretCode: code })
+    });
+
+    if (res.ok) {
+      closeDeleteModal();
+      showToast('🗑️ Confession deleted!', 'success');
+      loadConfessions();
+    } else {
+      const data = await res.json();
+      showToast(data.error || 'Failed to delete', 'error');
+    }
+  } catch (err) {
+    console.error('Error deleting:', err);
+    showToast('Error deleting confession', 'error');
+  }
+}
+
+function logout() {
+  if (confirm('Are you sure you want to logout?')) {
+    document.cookie = 'connect.sid=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+    window.location.href = 'http://localhost:3000';
+  }
+}
+
+document.getElementById('submit').addEventListener('click', submitConfession);
+document.getElementById('text').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && e.ctrlKey) submitConfession();
+});
+
+document.getElementById('editCode').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') saveEdit();
+});
+
+document.getElementById('deleteCode').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') confirmDelete();
+});
+
+// Close modals when clicking outside
+window.addEventListener('click', (e) => {
+  if (e.target.id === 'editModal') closeEditModal();
+  if (e.target.id === 'deleteModal') closeDeleteModal();
+});
+
+fetchUser();
+</script>
+</body>
+</html>
